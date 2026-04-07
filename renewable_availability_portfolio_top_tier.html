@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Standardizing Availability Calculations for Renewable Plants</title>
+  <style>
+    :root {
+      --bg: #06130f;
+      --bg-2: #0a1d17;
+      --panel: rgba(10, 26, 21, 0.82);
+      --panel-2: rgba(16, 39, 31, 0.92);
+      --line: rgba(255,255,255,0.09);
+      --text: #effcf6;
+      --muted: #a2c6b7;
+      --accent: #6ee7b7;
+      --accent-2: #34d399;
+      --accent-3: #22c55e;
+      --glow: rgba(52, 211, 153, 0.22);
+      --shadow: 0 26px 70px rgba(0,0,0,0.35);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1220px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(110, 231, 183, 0.16), transparent 26%),
+        radial-gradient(circle at 85% 18%, rgba(34, 197, 94, 0.10), transparent 24%),
+        linear-gradient(180deg, #06120f 0%, #071611 50%, #06100d 100%);
+      overflow-x: hidden;
+    }
+
+    .ambient-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 82%);
+      opacity: 0.55;
+    }
+
+    .container {
+      width: min(calc(100% - 40px), var(--max));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      backdrop-filter: blur(18px);
+      background: rgba(6, 18, 15, 0.58);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .nav-inner {
+      width: min(calc(100% - 40px), var(--max));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(110, 231, 183, 0.16), rgba(52, 211, 153, 0.26));
+      border: 1px solid rgba(110, 231, 183, 0.20);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.96rem;
+      transition: color .2s ease;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+      padding: 78px 0 36px;
+      position: relative;
+    }
+
+    .hero-wrap {
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .hero-main,
+    .hero-side,
+    .card,
+    .stat-card,
+    .process-step,
+    .impact-card,
+    .quote-card,
+    .footer-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-main {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      padding: 38px;
+    }
+
+    .hero-main::before {
+      content: "";
+      position: absolute;
+      right: -50px;
+      top: -30px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.24), transparent 70%);
+      filter: blur(10px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(110, 231, 183, 0.09);
+      border: 1px solid rgba(110, 231, 183, 0.14);
+      color: #ddfff0;
+      text-transform: uppercase;
+      font-size: 0.84rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 16px rgba(110, 231, 183, 0.9);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4.3rem);
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+      max-width: 12ch;
+    }
+
+    .hero-copy {
+      margin: 20px 0 0;
+      max-width: 58ch;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.96rem;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .btn-primary {
+      color: #062117;
+      background: linear-gradient(135deg, #bbf7d0, #6ee7b7 55%, #34d399);
+      box-shadow: 0 16px 34px rgba(52, 211, 153, 0.28);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #dcfff1;
+      font-size: 0.9rem;
+    }
+
+    .hero-side {
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      background: linear-gradient(180deg, rgba(15, 36, 29, 0.95), rgba(7, 18, 15, 0.84));
+    }
+
+    .kicker {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      margin-bottom: 6px;
+    }
+
+    .meta-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .meta-title {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+    }
+
+    .meta-value {
+      font-size: 1.03rem;
+      line-height: 1.55;
+      font-weight: 600;
+    }
+
+    section { padding: 36px 0; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.35vw, 2.4rem);
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-weight: 700;
+      font-size: 1.08rem;
+      line-height: 1.55;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      border-radius: var(--radius-lg);
+      padding: 28px;
+    }
+
+    .card h3 {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      line-height: 1.78;
+      font-size: 1rem;
+    }
+
+    ul.clean {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    ul.clean li {
+      position: relative;
+      padding-left: 22px;
+    }
+
+    ul.clean li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 14px rgba(52, 211, 153, 0.7);
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .process-step {
+      border-radius: 22px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-no {
+      display: inline-flex;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #062117;
+      background: linear-gradient(135deg, #bbf7d0, #6ee7b7);
+      margin-bottom: 16px;
+    }
+
+    .process-step h4 {
+      margin: 0 0 10px;
+      font-size: 1.06rem;
+    }
+
+    .process-step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .formula-band {
+      border-radius: var(--radius-xl);
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(110, 231, 183, 0.10), rgba(34, 197, 94, 0.06));
+      border: 1px solid rgba(110, 231, 183, 0.14);
+      box-shadow: var(--shadow);
+    }
+
+    .formula-band h3 {
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+    }
+
+    .formula-band p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 70ch;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .impact-card {
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .impact-card strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .impact-card span {
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .quote-card {
+      border-radius: var(--radius-xl);
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quote-card::after {
+      content: "“";
+      position: absolute;
+      right: 24px;
+      top: -10px;
+      font-size: 8rem;
+      line-height: 1;
+      color: rgba(110, 231, 183, 0.08);
+      font-family: Georgia, serif;
+    }
+
+    .quote-card p {
+      margin: 0;
+      font-size: clamp(1.08rem, 2.1vw, 1.48rem);
+      line-height: 1.7;
+      max-width: 44ch;
+    }
+
+    .quote-meta {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .footer { padding: 24px 0 60px; }
+
+    .footer-card {
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 62ch;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1120px) {
+      .hero-wrap,
+      .stats,
+      .two-col,
+      .process-grid,
+      .impact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .nav-inner { flex-direction: column; align-items: flex-start; }
+      .container, .nav-inner { width: min(calc(100% - 24px), var(--max)); }
+      .hero { padding-top: 42px; }
+      .hero-main, .hero-side, .card, .stat-card, .process-step, .impact-card, .quote-card, .footer-card, .formula-band { padding: 22px; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .nav-links { gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-grid"></div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <span>Project Portfolio</span>
+      </div>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#design">Design</a>
+        <a href="#impact">Impact</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero container reveal">
+    <div class="hero-wrap">
+      <div class="hero-main">
+        <div class="eyebrow"><span class="pulse"></span> Data Analyst / Product Designer · Renewable Portfolio</div>
+        <h1>Standardizing Availability Calculations for Renewable Plants</h1>
+        <p class="hero-copy">
+          Reviewed and simplified how contractual availability was calculated across 50 renewable energy plants, transforming fragmented contract logic into a standardized formula framework ready for digital platform implementation.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#impact">See Impact</a>
+          <a class="btn btn-secondary" href="#design">Explore Solution</a>
+        </div>
+        <div class="tag-row">
+          <span class="tag">50 Plants</span>
+          <span class="tag">7 Standard Formulas</span>
+          <span class="tag">Contract Logic Simplification</span>
+          <span class="tag">Digital Product Enablement</span>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div>
+          <div class="kicker">Project Snapshot</div>
+          <div class="meta-grid">
+            <div class="meta-card">
+              <div class="meta-title">Role</div>
+              <div class="meta-value">Data Analyst / Product Designer</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-title">Project Focus</div>
+              <div class="meta-value">Standardization of contractual availability calculations across a renewable portfolio</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-title">Main Output</div>
+              <div class="meta-value">A configurable formula framework and implementation-ready product logic</div>
+            </div>
+            <div class="meta-card">
+              <div class="meta-title">Business Objective</div>
+              <div class="meta-value">Enable consistent reporting, easier comparison, and faster onboarding across plants</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section id="overview" class="container reveal">
+      <div class="section-head">
+        <div>
+          <h2>Executive Overview</h2>
+        </div>
+        <p>
+          Availability was being calculated differently across the portfolio, with each plant following its own contract definitions, exclusions, and measurement logic. This project brought those variations into one structured model that could support both reporting consistency and product scalability.
+        </p>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Portfolio Scope</div>
+          <div class="stat-value">Reviewed contractual logic across 50 renewable energy plants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Formula Reduction</div>
+          <div class="stat-value">Condensed dozens of plant-specific methods into 7 standard formulas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Product Readiness</div>
+          <div class="stat-value">Defined configurable parameters for digital implementation</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Operational Value</div>
+          <div class="stat-value">Improved comparability, reporting speed, and formula governance</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analysis" class="container reveal">
+      <div class="section-head">
+        <div>
+          <h2>Contract Analysis</h2>
+        </div>
+        <p>
+          The work started with deep contract review to understand how each plant defined availability, measured performance, and handled exclusions, thresholds, and period logic.
+        </p>
+      </div>
+
+      <div class="two-col">
+        <article class="card">
+          <h3>What I Analyzed</h3>
+          <ul class="clean">
+            <li>Reviewed contracts for 50 plants to understand how contractual availability was defined.</li>
+            <li>Extracted formulas, rules, exclusions, and calculation logic across daily, monthly, and yearly periods.</li>
+            <li>Mapped differences between time-based and power-based performance approaches.</li>
+            <li>Identified inconsistencies, ambiguous clauses, and edge cases that affected comparability.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>Core Challenge</h3>
+          <p>
+            The challenge was not just technical. Contract language varied in structure, detail, and interpretation, meaning the same portfolio metric could represent different realities across plants. The solution had to preserve contractual intent while simplifying implementation.
+          </p>
+          <div class="tag-row">
+            <span class="tag">Contract Interpretation</span>
+            <span class="tag">Edge Case Mapping</span>
+            <span class="tag">Cross-Plant Consistency</span>
+            <span class="tag">Metric Governance</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="container reveal">
+      <div class="formula-band">
+        <h3>From Many Variations to One Standardized System</h3>
+        <p>
+          Instead of keeping dozens of custom formulas alive, the project reduced them into a compact set of seven standard formulas, each made flexible through configurable parameters such as calculation period, aggregation level, exclusions, thresholds, and performance basis.
+        </p>
+      </div>
+    </section>
+
+    <section id="design" class="container reveal">
+      <div class="section-head">
+        <div>
+          <h2>Standardization &amp; Product Design</h2>
+        </div>
+        <p>
+          After identifying the logic patterns, the next step was to translate them into a scalable design that could be embedded into a digital asset management platform without losing flexibility.
+        </p>
+      </div>
+
+      <div class="process-grid">
+        <article class="process-step">
+          <div class="step-no">01</div>
+          <h4>Pattern Comparison</h4>
+          <p>Compared plant formulas side by side to find overlap, recurring structures, and special-case logic that could be generalized.</p>
+        </article>
+        <article class="process-step">
+          <div class="step-no">02</div>
+          <h4>Formula Consolidation</h4>
+          <p>Reduced the formula universe into seven standardized calculation models that covered the full portfolio with fewer exceptions.</p>
+        </article>
+        <article class="process-step">
+          <div class="step-no">03</div>
+          <h4>Parameter Design</h4>
+          <p>Defined configurable inputs such as period, measurement level, exclusions, and thresholds so each plant could be represented within one shared framework.</p>
+        </article>
+        <article class="process-step">
+          <div class="step-no">04</div>
+          <h4>Product Documentation</h4>
+          <p>Specified how formulas should be configured, implemented, and displayed in the platform across plant, equipment, monthly, and YTD views.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="container reveal">
+      <div class="two-col">
+        <article class="card">
+          <h3>Implementation Thinking</h3>
+          <ul class="clean">
+            <li>Documented formulas in a format usable by product and engineering teams.</li>
+            <li>Defined how users should configure calculations depending on plant contract structure.</li>
+            <li>Suggested output views for portfolio reporting, including by plant, by equipment, monthly, and year-to-date perspectives.</li>
+            <li>Created a logic foundation that supports onboarding of new plants with less manual interpretation.</li>
+          </ul>
+        </article>
+
+        <aside class="quote-card">
+          <p>
+            Strong standardization is not about forcing everything into one rigid rule. It is about designing a system flexible enough to respect contractual differences while still making the portfolio measurable in one language.
+          </p>
+          <div class="quote-meta">Design Principle</div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="impact" class="container reveal">
+      <div class="section-head">
+        <div>
+          <h2>Impact</h2>
+        </div>
+        <p>
+          The result was a cleaner operating model for availability calculations, making reporting more reliable and the platform more scalable across the renewable portfolio.
+        </p>
+      </div>
+
+      <div class="impact-grid">
+        <div class="impact-card">
+          <strong>Consistent Portfolio Metric</strong>
+          <span>Created one standardized way to calculate availability across all plants, improving trust in reported results.</span>
+        </div>
+        <div class="impact-card">
+          <strong>Better Comparability</strong>
+          <span>Made it easier to compare plant performance across the portfolio without contract-specific calculation noise.</span>
+        </div>
+        <div class="impact-card">
+          <strong>Faster Onboarding</strong>
+          <span>Reduced the effort required to bring new plants into the reporting system by using configurable standard models.</span>
+        </div>
+        <div class="impact-card">
+          <strong>Lower Manual Effort</strong>
+          <span>Cut down manual interpretation, repetitive setup, and error risk by replacing fragmented logic with structured formula design.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer container reveal">
+      <div class="footer-card">
+        <div>
+          <div class="kicker">Portfolio Case Study</div>
+          <h2 style="margin: 0 0 8px;">Standardizing Availability Calculations for Renewable Plants</h2>
+          <p>
+            A premium portfolio presentation focused on analytical standardization, contract logic design, and product-ready implementation for renewable asset performance reporting.
+          </p>
+        </div>
+        <a class="btn btn-primary" href="#top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to Top</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

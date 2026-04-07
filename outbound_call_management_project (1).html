@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outbound Call Management Module | Portfolio Project</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #111936;
+      --surface: rgba(255, 255, 255, 0.08);
+      --surface-strong: rgba(255, 255, 255, 0.12);
+      --card: rgba(255, 255, 255, 0.06);
+      --text: #eef2ff;
+      --muted: #b6c0e0;
+      --line: rgba(255, 255, 255, 0.12);
+      --primary: #8b5cf6;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --shadow: 0 18px 50px rgba(3, 8, 24, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --max-width: 1180px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 24%),
+        linear-gradient(180deg, #0a1022 0%, #0b1120 45%, #09101d 100%);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: min(var(--max-width), 92%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(16px);
+      background: rgba(8, 12, 24, 0.62);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .topbar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 1rem 0;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+    }
+
+    .nav {
+      display: flex;
+      gap: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.55rem 0.85rem;
+      border-radius: 999px;
+      transition: 0.2s ease;
+    }
+
+    .nav a:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hero {
+      padding: 4.8rem 0 2.2rem;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow: var(--shadow);
+      border-radius: 32px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 2rem;
+      align-items: stretch;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.35), transparent 65%);
+      pointer-events: none;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: -100px auto auto -60px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.28), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #dbeafe;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 1.1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary));
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.8);
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 5vw, 4.4rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-copy p {
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 720px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.9rem;
+      flex-wrap: wrap;
+      margin-top: 1.7rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.95rem 1.25rem;
+      border-radius: 14px;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6d5efc);
+      color: white;
+      box-shadow: 0 14px 30px rgba(109, 94, 252, 0.32);
+    }
+
+    .btn-secondary {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-panel {
+      display: grid;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-metric {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 1.2rem 1.15rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .hero-metric span {
+      display: block;
+      color: #93c5fd;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.45rem;
+      font-weight: 700;
+    }
+
+    .hero-metric strong {
+      display: block;
+      font-size: 1.08rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-metric p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .section {
+      padding: 1.8rem 0 2.6rem;
+    }
+
+    .section-shell {
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.045));
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.6rem, 2vw, 2.2rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.7rem;
+    }
+
+    .section-intro {
+      color: var(--muted);
+      max-width: 780px;
+      margin-bottom: 1.8rem;
+      font-size: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.85rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card p,
+    .card li,
+    .timeline-item p,
+    .impact-box p {
+      color: var(--muted);
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    li + li {
+      margin-top: 0.8rem;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 0.62rem 0.95rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      font-size: 0.93rem;
+      font-weight: 700;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .timeline-item {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 20px;
+      padding: 1.25rem 1.25rem 1.25rem 1.35rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: linear-gradient(180deg, var(--accent), var(--primary));
+    }
+
+    .timeline-item h4 {
+      font-size: 1.05rem;
+      margin-bottom: 0.45rem;
+      color: #ffffff;
+    }
+
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .impact-box {
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 18px;
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .impact-box strong {
+      display: block;
+      margin-bottom: 0.55rem;
+      font-size: 1.02rem;
+      color: #ffffff;
+    }
+
+    .footer {
+      padding: 2rem 0 3rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 950px) {
+      .hero-card,
+      .grid-2,
+      .impact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        padding: 2rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar-inner {
+        align-items: flex-start;
+      }
+
+      .nav {
+        gap: 0.4rem;
+      }
+
+      .nav a {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.9rem;
+      }
+
+      .section-shell {
+        padding: 1.3rem;
+      }
+
+      .hero {
+        padding-top: 3.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="#top" class="brand">Michelle Arias · Portfolio Project</a>
+      <nav class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#design">Design</a>
+        <a href="#features">Features</a>
+        <a href="#impact">Impact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="eyebrow">Salesforce · Business Analyst / Process Designer</span>
+            <h1>Outbound Call Management Module in Salesforce</h1>
+            <p>
+              I designed a Salesforce module that helps teams manage outbound calls in a simple,
+              structured, and traceable way. The solution made it easier for operators to log,
+              classify, and close calls while keeping data complete, consistent, and connected
+              across the business.
+            </p>
+            <div class="hero-actions">
+              <a href="#overview" class="btn btn-primary">See Project Overview</a>
+              <a href="#features" class="btn btn-secondary">Explore Key Features</a>
+            </div>
+          </div>
+
+          <aside class="hero-panel">
+            <div class="hero-metric">
+              <span>Role</span>
+              <strong>Business Analyst / Process Designer</strong>
+              <p>Owned the functional thinking behind process structure, logic, UX flow, and governance.</p>
+            </div>
+            <div class="hero-metric">
+              <span>Focus</span>
+              <strong>Automation, usability, and control</strong>
+              <p>Balanced operator efficiency with reliable data capture and permission-based safeguards.</p>
+            </div>
+            <div class="hero-metric">
+              <span>Outcome</span>
+              <strong>Cleaner operations at scale</strong>
+              <p>Delivered faster call handling, stronger data quality, and better business visibility.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="overview">
+      <div class="container">
+        <div class="section-shell">
+          <h2 class="section-title">Project Overview</h2>
+          <p class="section-intro">
+            The module was created to support outbound call operations in Salesforce with a cleaner
+            process and stronger controls. It gave operators a clear path to follow, reduced manual
+            input, and ensured every call was properly linked to the right business record.
+          </p>
+
+          <div class="grid-2">
+            <article class="card">
+              <h3>Problem</h3>
+              <p>
+                Outbound call activity needed a more structured process so teams could capture the
+                right information, follow consistent business rules, and avoid losing context across
+                cases, contacts, tasks, and work orders.
+              </p>
+            </article>
+
+            <article class="card">
+              <h3>Solution</h3>
+              <p>
+                I designed a call management module in Salesforce with clear classification logic,
+                automatic field completion, validation rules, permissions, and built-in tracking of
+                unsuccessful calls.
+              </p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="design">
+      <div class="container">
+        <div class="section-shell">
+          <h2 class="section-title">Process & Functional Design</h2>
+          <p class="section-intro">
+            My role focused on translating business needs into a process that was easy to use,
+            technically consistent, and strong enough to support governance and reporting.
+          </p>
+
+          <div class="grid-2">
+            <article class="card">
+              <h3>Process & Logic Design</h3>
+              <ul>
+                <li>Mapped how outbound calls can start from different Salesforce objects such as cases, tasks, contacts, and work orders.</li>
+                <li>Defined rules to auto-fill key fields and reduce manual work for operators.</li>
+                <li>Ensured every call was connected to the correct record so the full business context stayed visible.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h3>Functional Design</h3>
+              <ul>
+                <li>Created a clear classification structure using Type → Motive → Cause.</li>
+                <li>Defined mandatory completion rules before a call could be closed.</li>
+                <li>Set permission-based editing for important fields and sensitive actions.</li>
+                <li>Added logic to detect unsuccessful calls such as voicemails or calls that were too short.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-shell">
+          <div class="grid-2">
+            <article class="card">
+              <h3>UX/UI & Data Quality</h3>
+              <ul>
+                <li>Designed a simple user flow so operators always knew what step came next.</li>
+                <li>Added warnings when required information was missing.</li>
+                <li>Made changes traceable for transparency, auditing, and accountability.</li>
+              </ul>
+            </article>
+
+            <article class="card">
+              <h3>Key Design Principles</h3>
+              <div class="tag-row">
+                <span class="tag">Usability</span>
+                <span class="tag">Scalability</span>
+                <span class="tag">Data Consistency</span>
+                <span class="tag">Traceability</span>
+                <span class="tag">Business Alignment</span>
+                <span class="tag">Governance</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-shell">
+      <h2 class="section-title">Solution Screens</h2>
+      <p class="section-intro">
+        Example views of the outbound call module interface, including call logging,
+        classification, and workflow validation.
+      </p>
+
+      <div class="image-grid">
+        <img src= "C:\Users\ASUS\Downloads\image.png" alt="Call logging screen">
+        <img src="images/project2.png" alt="Call classification structure">
+        <img src="images/project3.png" alt="Validation and workflow screen">
+      </div>
+    </div>
+  </div>
+</section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-shell">
+          <h2 class="section-title">Key Features</h2>
+          <p class="section-intro">
+            The final design combined usability, automation, and control to support day-to-day call
+            operations without sacrificing data quality.
+          </p>
+
+          <div class="timeline">
+            <div class="timeline-item">
+              <h4>Click-to-call from multiple Salesforce objects</h4>
+              <p>Users could launch outbound calls directly from the records they were already working in.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Automatic field completion</h4>
+              <p>Relevant information was pre-filled to reduce repetitive work and improve consistency.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Clear classification system</h4>
+              <p>The Type → Motive → Cause structure helped standardize how call outcomes were captured.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Permission-based editing and validation</h4>
+              <p>Rules controlled who could edit certain fields and prevented incomplete call closures.</p>
+            </div>
+            <div class="timeline-item">
+              <h4>Links between calls, cases, and tasks</h4>
+              <p>Each call remained tied to the right operational context for better tracking and reporting.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="impact">
+      <div class="container">
+        <div class="section-shell">
+          <h2 class="section-title">Impact</h2>
+          <p class="section-intro">
+            This module improved both the operator experience and the quality of the data generated by
+            the process, creating a more reliable foundation for business visibility and compliance.
+          </p>
+
+          <div class="impact-grid">
+            <div class="impact-box">
+              <strong>Faster Handling</strong>
+              <p>Less manual input meant operators could complete calls more efficiently.</p>
+            </div>
+            <div class="impact-box">
+              <strong>Better Data Quality</strong>
+              <p>Validation rules and structured classification improved consistency and reliability.</p>
+            </div>
+            <div class="impact-box">
+              <strong>Full Visibility</strong>
+              <p>Call activity stayed linked across records, giving the business a complete view.</p>
+            </div>
+            <div class="impact-box">
+              <strong>Stronger Compliance</strong>
+              <p>Tracked changes and permission rules supported internal controls and audit readiness.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Portfolio project page for Michelle Arias · Outbound Call Management Module in Salesforce</p>
+    </div>
+  </footer>
+</body>
+</html>
